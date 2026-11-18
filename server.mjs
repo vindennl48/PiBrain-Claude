@@ -23,7 +23,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 /** LAN first; the Cloudflare Tunnel adds a round trip, so it is the fallback. */
 const ENDPOINTS = ["http://192.168.1.4:8080/brain", "https://api.mitchwoodbine.com/brain"];
@@ -179,8 +179,9 @@ const TOOLS = [
     description:
       "Search the PiBrain personal knowledge base for facts about this user's setup: the home network, " +
       "Cloudflare, the Postgres/PostgREST stack, Proxmox, Tailscale, pi itself, and the individual " +
-      "projects. Use it before guessing an IP address, host name, tunnel ID or server path, and when " +
-      "the user says they have done this before or asks to check memory. Ranked by how much of the " +
+      "projects. Use it FIRST — before a web search, and before guessing an IP address, host name, " +
+      "tunnel ID or server path — whenever a task hits an error or an unknown, and when the user says " +
+      "they have done this before. Use the web alongside it when memory is thin or old. Ranked by how much of the " +
       "query each row matches, not by date. Returns short previews; use memory_load to read one in full.",
     inputSchema: {
       type: "object",
@@ -439,11 +440,11 @@ const TOOLS = [
     title: "Memory Add",
     write: true,
     description:
-      "Store one fact in the PiBrain knowledge base immediately. Use it the moment something non-obvious " +
-      "is learned about this setup — a gotcha that cost real time, a decision whose reason would otherwise " +
-      "be lost. Most sessions should produce no memory_add calls: a row is worth storing only if a future " +
-      "agent would act differently knowing it. Never store anything discoverable by reading the code, and " +
-      "never a credential value — store where it lives instead. The whole stored record is returned. " +
+      "Store one fact in the PiBrain knowledge base immediately, without being asked. Use it the moment " +
+      "a problem is resolved (the cause and the fix), something is learned that took a web search or would " +
+      "need one again, or a decision is made whose reason would otherwise be lost. A row is worth storing " +
+      "if it would save a future agent a search or a mistake. Skip what is obvious from the code or already " +
+      "stored, and never store a credential value — store where it lives instead. The whole stored record is returned. " +
       "To correct or remove an existing row, use memory_correct instead.",
     inputSchema: {
       type: "object",
@@ -617,21 +618,24 @@ const INSTRUCTIONS =
           "infra (home network), cloudflare, postgres (the self-hosted Postgres/PostgREST stack), proxmox, " +
           "tailscale, pi, mynotes, pimind, pedals, macapps, websites, excel, coding, agent-memory.",
         "",
-        "READ: call memory_search unprompted whenever a task touches one of those domains, before guessing " +
-          "an IP, host name, tunnel ID, API path or server location, and when the user says they've done " +
-          "this before or to check memory. Search returns previews — memory_load(id) before relying on a " +
-          "row. memory_list() shows the domains; memory_recent shows recent session outcomes. Rows older " +
-          "than ~6 months: re-verify infrastructure facts against the live system.",
+        "SEARCH FIRST: call memory_search unprompted before a web search or reading external docs, and " +
+          "before guessing an IP, host name, tunnel ID, API path or server location. Do it whenever a task " +
+          "touches those domains, hits an error or unknown, or the user says they've done this before. " +
+          "A stored answer outranks a fresh web result for this setup; use the web alongside it when memory " +
+          "is thin, old or silent. Search returns previews — memory_load(id) before relying on a row. " +
+          "memory_list() shows the domains; memory_recent shows recent session outcomes. Rows older than " +
+          "~6 months: re-verify infrastructure facts against the live system.",
         "",
         MODE === "readonly"
           ? "WRITE: disabled for this session (PIBRAIN_MEMORY=readonly). Say what needs recording and stop."
-          : "WRITE (event-triggered, never routine): memory_add when something cost time, you were corrected, " +
-            "or a decision was made whose reason isn't in the code. One claim per row; store only what would " +
-            "make a future agent act differently; never anything readable from the code; never a credential " +
-            "value (store where it lives). Most sessions should save nothing. memory_correct fixes a row: " +
-            "'replace' if it went stale, 'remove' if it was never true — it applies at once, nothing is " +
-            "deleted, so tell the user what you changed and the row ids. memory_session_end records a " +
-            "one-line session outcome.",
+          : "SAVE as it happens, without being asked: memory_add whenever you resolve a problem (record the " +
+            "cause and the fix), learn something you had to look up on the web or would otherwise look up " +
+            "again, are corrected, or a decision is made whose reason isn't in the code. The test: would this " +
+            "save a future agent a search or a mistake? One claim per row, with evidence (path, command, URL). " +
+            "Skip what is obvious from the code and what is already stored; never a credential value (store " +
+            "where it lives). memory_correct fixes a row: 'replace' if it went stale, 'remove' if it was never " +
+            "true — it applies at once, nothing is deleted, so tell the user what you changed and the row ids. " +
+            "memory_session_end records a one-line session outcome.",
         "",
         "Ask-first rows (credential locations, infrastructure identifiers) never appear in search; you see " +
           "only labels. Use memory_load(id, reveal: true) only when the task genuinely needs it, never speculatively.",

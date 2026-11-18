@@ -49,3 +49,16 @@ means re-registering.
 - Rows are written with `created_by: "agent"`, the same as pi, so pi's `/memory undo` finds them.
 
 No dependencies and no build step; needs Node 18+.
+
+## Desktop extension (Chat and Cowork tabs)
+
+The Code tab uses the registration above. The rest of the desktop app needs the extension
+bundle, built from `manifest.json`:
+
+```bash
+npx -y @anthropic-ai/mcpb pack . pibrain.mcpb
+```
+
+Open `pibrain.mcpb` with Claude (or Settings → Extensions → Advanced settings → Install
+Extension). The installed extension is a copy, so rebuild and reinstall after changing
+`server.mjs`.

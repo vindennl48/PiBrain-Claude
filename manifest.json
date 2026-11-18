@@ -1,0 +1,32 @@
+{
+  "manifest_version": "0.2",
+  "name": "pibrain",
+  "display_name": "PiBrain",
+  "version": "0.1.0",
+  "description": "Personal knowledge base: search, read and record facts about the home network, Cloudflare, Postgres, Proxmox, Tailscale, pi and individual projects.",
+  "long_description": "The Claude counterpart of the PiBrain pi extension. Exposes the same seven memory_* tools over the same self-hosted PostgREST API. The API key is read from BRAIN_API_KEY or ~/.zshenv; it is not stored in the extension.",
+  "author": { "name": "Mitch Woodbine" },
+  "server": {
+    "type": "node",
+    "entry_point": "server.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server.mjs"],
+      "env": {}
+    }
+  },
+  "tools": [
+    { "name": "memory_search", "description": "Search the knowledge base; returns previews with ids." },
+    { "name": "memory_list", "description": "Browse by domain or kind." },
+    { "name": "memory_load", "description": "Read one row in full." },
+    { "name": "memory_recent", "description": "Recent session outcomes." },
+    { "name": "memory_add", "description": "Store a new row." },
+    { "name": "memory_correct", "description": "Replace a stale row or remove one that was never true." },
+    { "name": "memory_session_end", "description": "Record a one-line session outcome." }
+  ],
+  "prompts": [
+    { "name": "sweep", "description": "Sweep this session for rows worth recording.", "text": "Review this session and record PiBrain rows for anything worth keeping, then call memory_session_end." }
+  ],
+  "compatibility": { "platforms": ["darwin"], "runtimes": { "node": ">=18.0.0" } },
+  "license": "UNLICENSED"
+}

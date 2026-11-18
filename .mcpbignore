@@ -1,0 +1,5 @@
+.git
+.gitignore
+*.mcpb
+install-desktop.mjs
+.DS_Store

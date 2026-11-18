@@ -14,6 +14,8 @@
  * Environment:
  *   BRAIN_API_KEY   the PostgREST key. If unset, it is read from ~/.zshenv,
  *                   because a GUI-launched app does not source the shell.
+ *   PIBRAIN_ENDPOINTS  comma-separated API base URLs, tried in order. Unset
+ *                   means the author's own endpoints (see ENDPOINTS below).
  *   PIBRAIN_MEMORY  "off" disables every tool; "readonly" disables the three
  *                   that write. Anything else (or unset) is fully on.
  */
@@ -23,10 +25,22 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
 
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 
-/** LAN first; the Cloudflare Tunnel adds a round trip, so it is the fallback. */
-const ENDPOINTS = ["http://192.168.1.4:8080/brain", "https://api.mitchwoodbine.com/brain"];
+/**
+ * Base URLs of the PostgREST API, tried in order; the first that answers is
+ * kept for the rest of the session. PIBRAIN_ENDPOINTS (comma-separated)
+ * replaces the defaults, which are the author's own: LAN first, because the
+ * Cloudflare Tunnel adds a round trip, so it is the fallback.
+ */
+const DEFAULT_ENDPOINTS = ["http://192.168.1.4:8080/brain", "https://api.mitchwoodbine.com/brain"];
+const ENDPOINTS = (() => {
+  const fromEnv = (process.env.PIBRAIN_ENDPOINTS ?? "")
+    .split(",")
+    .map((e) => e.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+  return fromEnv.length > 0 ? fromEnv : DEFAULT_ENDPOINTS;
+})();
 const TIMEOUT_MS = 8000;
 const PREVIEW_CHARS = 160;
 const KINDS = ["fact", "practical", "gotcha", "decision", "procedure", "history"];

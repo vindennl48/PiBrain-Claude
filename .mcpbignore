@@ -3,3 +3,4 @@
 *.mcpb
 install-desktop.mjs
 .DS_Store
+schema.sql
